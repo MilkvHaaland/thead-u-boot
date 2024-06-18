@@ -155,6 +155,11 @@
       defined(CONFIG_LIGHT_SEC_BOOT_WITH_VERIFY_ANT_REF) || \
       defined(CONFIG_TARGET_LIGHT_FM_C910_VAL_ANT_REF)
 #define ENV_STR_BOARD "board#=LD\0"
+#elif defined(CONFIG_LIGHT_ANDROID_BOOT_IMAGE_MILKV_MELES) || \
+      defined(CONFIG_LIGHT_SEC_BOOT_WITH_VERIFY_MILKV_MELES) || \
+      defined(CONFIG_TARGET_LIGHT_FM_C910_MILKV_MELES)
+#define ENV_STR_BOARD "board#=MELES\0"
+
 #endif
 
 
@@ -636,6 +641,76 @@
 	"load_str=ext4load mmc ${mmcdev}:${mmcbootpart} $fwaddr str.bin;cp.b $fwaddr $str_ram_addr $filesize\0"\
 	"bootcmd_load=run load_aon;run load_c906_audio; run load_str; ext4load mmc ${mmcdev}:${mmcbootpart} $opensbi_addr fw_dynamic.bin; ext4load mmc ${mmcdev}:${mmcbootpart} $dtb_addr ${fdt_file}; ext4load mmc ${mmcdev}:${mmcbootpart} $kernel_addr Image\0" \
 	"bootcmd=run bootcmd_load; bootslave; run finduuid; run set_bootargs; booti $kernel_addr - $dtb_addr;\0" \
+        "\0"
+#elif defined (CONFIG_LIGHT_SEC_BOOT_WITH_VERIFY_MILKV_MELES)
+#define CONFIG_EXTRA_ENV_SETTINGS \
+	"splashimage=0x30000000\0" \
+	"splashpos=m,m\0" \
+	"fdt_high=0xffffffffffffffff\0" \
+	ENV_STR_BOARD \
+	"tf_addr=0x100000\0" \
+	"dtb_addr=0x03800000\0" \
+	"kernel_addr=0x00200000\0" \
+	"aon_ram_addr=0xffffef8000\0" \
+	"audio_ram_addr=0x32000000\0" \
+	"str_ram_addr=0xffe0000000\0" \
+	"fwaddr=0x10000000\0"\
+	"tee_addr=0x1c000000\0" \
+	"sec_upgrade_mode=0\0"\
+	"mmcdev=0\0" \
+	"mmcpart=8\0" \
+	"mmcbootpart=2\0" \
+	ENV_KERNEL_LOGLEVEL \
+	"sbmeta_security_level=1\0" \
+	"kdump_buf=180M\0" \
+	ENV_STR_BOOT_DELAY \
+	"uboot_version=0x0000000000000000\0"\
+	"tee_version=0x00000000\0"\
+	"tf_version=0x00000000\0"\
+	"sbmeta_version=0x00000000\0"\
+	"fdt_file=th1520-milkv-meles.dtb\0" \
+	"uuid_rootfs=80a5a8e9-c744-491a-93c1-4f4194fd690b\0" \
+	"partitions=name=table,size=2031KB;name=boot,size=200MiB,type=boot;name=tee,size=50MiB,type=boot;name=stash,size=50MiB,type=boot;name=sbmeta,size=8MiB,type=boot;name=swap,size=1536MiB,type=boot;name=fastresume,size=512MiB,type=boot;name=root,size=-,type=linux,uuid=${uuid_rootfs}\0" \
+	"finduuid=part uuid mmc ${mmcdev}:${mmcpart} uuid\0" \
+	"gpt_partition=gpt write mmc ${mmcdev} $partitions\0" \
+	ENV_PUBLIC_BOOTARGS \
+	"set_bootargs=setenv bootargs console=ttyS0,115200 root=PARTUUID=${uuid} ${pub_bootargs} loglevel=${kernel_loglevel} eth=$ethaddr crashkernel=${kdump_buf} ${resume_bootargs}\0" \
+	"load_aon=ext4load mmc ${mmcdev}:${mmcbootpart} $fwaddr light_aon_fpga.bin;cp.b $fwaddr $aon_ram_addr $filesize;bootaon\0"\
+	"load_c906_audio=ext4load mmc ${mmcdev}:${mmcbootpart} $fwaddr light_c906_audio.bin;cp.b $fwaddr $audio_ram_addr $filesize\0"\
+	"load_str=ext4load mmc ${mmcdev}:${mmcbootpart} $fwaddr str.bin;cp.b $fwaddr $str_ram_addr $filesize\0"\
+	"bootcmd_load=run load_aon;run load_c906_audio;ext4load mmc 0:3 $tf_addr trust_firmware.bin; ext4load mmc 0:3 $tee_addr tee.bin;ext4load mmc ${mmcdev}:${mmcbootpart} $dtb_addr ${fdt_file}; ext4load mmc ${mmcdev}:${mmcbootpart} $kernel_addr Image\0" \
+	"bootcmd=run bootcmd_load; chk_hibernate; fixup_memory_region; bootslave; run finduuid; run set_bootargs; sbmetaboot; run load_str;booti $kernel_addr - $dtb_addr;\0" \
+        "\0"
+#elif defined (CONFIG_TARGET_LIGHT_FM_C910_MILKV_MELES)
+#define CONFIG_EXTRA_ENV_SETTINGS \
+	"splashimage=0x30000000\0" \
+	"splashpos=m,m\0" \
+	"fdt_high=0xffffffffffffffff\0" \
+	"opensbi_addr=0x0\0" \
+	"dtb_addr=0x03800000\0" \
+	"kernel_addr=0x00200000\0" \
+	"aon_ram_addr=0xffffef8000\0" \
+	"audio_ram_addr=0x32000000\0" \
+	"str_ram_addr=0xffe0000000\0" \
+	"fwaddr=0x10000000\0"\
+	"mmcdev=0\0" \
+	"mmcpart=5\0" \
+	"mmcbootpart=2\0" \
+	ENV_KERNEL_LOGLEVEL \
+	"kdump_buf=180M\0" \
+	ENV_STR_BOOT_DELAY \
+	"fdt_file=th1520-milkv-meles.dtb\0" \
+	"uuid_rootfs=80a5a8e9-c744-491a-93c1-4f4194fd690b\0" \
+	"partitions=name=table,size=2031KB;name=boot,size=200MiB,type=boot;name=swap,size=1536MiB,type=boot;name=fastresume,size=512MiB,type=boot;name=root,size=-,type=linux,uuid=${uuid_rootfs}\0" \
+	"finduuid=part uuid mmc ${mmcdev}:${mmcpart} uuid\0" \
+	"gpt_partition=gpt write mmc ${mmcdev} $partitions\0" \
+	ENV_PUBLIC_BOOTARGS \
+	"set_bootargs=setenv bootargs console=ttyS0,115200 root=PARTUUID=${uuid} ${pub_bootargs} loglevel=${kernel_loglevel} eth=$ethaddr crashkernel=${kdump_buf} ${resume_bootargs}\0" \
+	"load_aon=ext4load mmc ${mmcdev}:${mmcbootpart} $fwaddr light_aon_fpga.bin;cp.b $fwaddr $aon_ram_addr $filesize;bootaon\0"\
+	"load_c906_audio=ext4load mmc ${mmcdev}:${mmcbootpart} $fwaddr light_c906_audio.bin;cp.b $fwaddr $audio_ram_addr $filesize\0"\
+	"load_str=ext4load mmc ${mmcdev}:${mmcbootpart} $fwaddr str.bin;cp.b $fwaddr $str_ram_addr $filesize\0"\
+	"bootcmd_load=run load_aon;run load_c906_audio; run load_str; ext4load mmc ${mmcdev}:${mmcbootpart} $opensbi_addr fw_dynamic.bin; ext4load mmc ${mmcdev}:${mmcbootpart} $dtb_addr ${fdt_file}; ext4load mmc ${mmcdev}:${mmcbootpart} $kernel_addr Image\0" \
+	"bootcmd=run bootcmd_load; chk_hibernate; fixup_memory_region; bootslave; run finduuid; run set_bootargs; booti $kernel_addr - $dtb_addr;\0" \
         "\0"
 #else
 #define CONFIG_EXTRA_ENV_SETTINGS \
